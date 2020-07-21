@@ -33,11 +33,14 @@ jobs:
     - name: build elm project
       run: npm run build
 
-    - name: move dist/ to public
+    - name: move ./dist/ to ./public/
       run: |
         mkdir ./public
-        mv ./dist/index.html ./*.js ./dist/*.css ./public/
-
+        mv ./dist/index.html ./public/
+        for file_name in ./dist/*.js ./dist/*.css
+          do if ls $file_name 1> /dev/null 2>&1; then mv $file_name ./public; fi
+        done
+      shell: bash
 
     - name: deploy
       uses: peaceiris/actions-gh-pages@v3
