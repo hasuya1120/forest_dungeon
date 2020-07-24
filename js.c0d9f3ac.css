@@ -1,0 +1,2 @@
+.game_board{display:flex;justify-content:center}.container{font-family:emoji;display:grid;grid-template-columns:repeat(31,20px);grid-template-rows:repeat(31,20px)}.menu{text-align:center;width:200px}.road,.wall{text-align:center;background-color:#228b22}.character_point,.goal_point,.start_point{text-align:center;background-color:#3cb371}.hidden_point{text-align:center;background-color:#000}
+/*# sourceMappingURL=js.c0d9f3ac.css.map */
