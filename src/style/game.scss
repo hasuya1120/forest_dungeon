@@ -1,0 +1,38 @@
+.game_board {
+    display: flex;
+    justify-content: center;
+}
+.container {
+    font-family: emoji;
+    display: grid;
+    grid-template-columns: repeat(31, 20px);
+    grid-template-rows: repeat(31, 20px);
+}
+.menu {
+    text-align: center;
+    width: 200px;
+}
+.wall {
+    text-align: center;
+    background-color: forestgreen;
+}
+.road {
+    text-align: center;
+    background-color: forestgreen;
+}
+.start_point {
+    text-align: center;
+    background-color: mediumseagreen;
+}
+.goal_point {
+    text-align: center;
+    background-color: mediumseagreen;
+}
+.character_point {
+    text-align: center;
+    background-color: mediumseagreen;
+}
+.hidden_point {
+    text-align: center;
+    background-color: black;
+}

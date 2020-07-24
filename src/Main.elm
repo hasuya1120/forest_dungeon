@@ -3,6 +3,8 @@ module Main exposing (Model, Msg, init, main, subscriptions, update, view)
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Random
+import Room exposing (..)
 
 
 main : Program () Model Msg
@@ -16,12 +18,18 @@ main =
 
 
 type alias Model =
-    {}
+    { room : Room }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( {}, Cmd.none )
+    let
+        room =
+            initializeRoom 30
+    in
+    ( { room = room }
+    , Random.generate ChooseCandidate (chooseCandidate room.candidates)
+    )
 
 
 
@@ -29,14 +37,38 @@ init =
 
 
 type Msg
-    = SampleMessage
+    = ChooseCandidate ( Maybe Point, List Point )
+    | ChooseDirections (List Direction)
+    | GeneratingRoom
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        _ ->
-            ( model, Cmd.none )
+        ChooseCandidate ( maybeCandidate, _ ) ->
+            let
+                currentRoom =
+                    model.room
+
+                newRoom =
+                    { currentRoom | candidates = Maybe.withDefault [] (Maybe.map List.singleton maybeCandidate) }
+            in
+            ( { model | room = newRoom }
+            , Random.generate ChooseDirections (chooseDirections newRoom.maxOfCoordinate)
+            )
+
+        ChooseDirections directions ->
+            let
+                currentRoom =
+                    model.room
+
+                newRoom =
+                    { currentRoom | directions = directions }
+            in
+            update GeneratingRoom { model | room = newRoom }
+
+        GeneratingRoom ->
+            ( { model | room = generateRoom model.room }, Cmd.none )
 
 
 
@@ -48,10 +80,22 @@ subscriptions model =
     Sub.none
 
 
-
--- VIEW
-
-
 view : Model -> Html Msg
 view model =
-    div [] [ text "hello!" ]
+    div [ class "game_board" ]
+        [ div [ class "container" ]
+            (List.map
+                (\p -> viewPointWithin1PointWithCharacter p)
+                model.room.points
+            )
+        ]
+
+
+viewPointWithin1PointWithCharacter : Point -> Html Msg
+viewPointWithin1PointWithCharacter point =
+    case point.coordinateStatus of
+        Wall ->
+            div [ class "wall" ] [ text "🌲" ]
+
+        Road ->
+            div [ class "road" ] [ text "☘️" ]
