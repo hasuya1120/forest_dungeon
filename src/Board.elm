@@ -76,15 +76,22 @@ chooseDirectionsAndCandidate candidates maxOfCoordinate =
 viewRoom : Room -> List (Html msg)
 viewRoom room =
     List.map
-        (\p -> viewPoint p)
+        (\p -> viewPoint p room)
         room.points
 
 
-viewPoint : Point -> Html msg
-viewPoint point =
-    case point.coordinateStatus of
-        Wall ->
-            div [ class "wall" ] [ text "🌲" ]
+viewPoint : Point -> Room -> Html msg
+viewPoint point room =
+    if point.coordinate == room.startCoordinate then
+        div [ class "start_point" ] [ text "🙍\u{200D}♂️" ]
 
-        Road ->
-            div [ class "road" ] [ text "☘️" ]
+    else if point.coordinate == room.stairsCoordinate then
+        div [ class "goal_point" ] [ text "🕳️" ]
+
+    else
+        case point.coordinateStatus of
+            Wall ->
+                div [ class "wall" ] [ text "🌲" ]
+
+            Road ->
+                div [ class "road" ] [ text "☘️" ]
