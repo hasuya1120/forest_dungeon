@@ -1,13 +1,12 @@
-module Room exposing (CoordinateStatus(..), Direction, Point, Room, chooseCandidate, chooseDirections, generateRoom, initializeRoom)
+module Room exposing (Candidates, Coordinate, CoordinateStatus(..), Direction(..), Point, Room, generateRoom, initializeRoom)
 
 import List.Extra as ListE
-import Random exposing (Generator)
-import Random.List
 
 
 type alias Room =
     { points : RoomPoints
     , maxOfCoordinate : Int
+    , stairsCoordinate : Coordinate
     , directions : List Direction
     , candidates : Candidates
     }
@@ -56,6 +55,7 @@ initializeRoom maxOfCoordinate =
     in
     { points = points
     , maxOfCoordinate = maxOfCoordinate
+    , stairsCoordinate = Coordinate 0 0
     , directions = []
     , candidates = initializeCandidate points
     }
@@ -95,25 +95,6 @@ isOdd point =
 initializeCandidate : RoomPoints -> Candidates
 initializeCandidate roomPoints =
     List.filter (\p -> isOdd p) roomPoints
-
-
-
--- Choose Candidate and Directions generator
-
-
-chooseCandidate : Candidates -> Generator ( Maybe Point, List Point )
-chooseCandidate candidates =
-    Random.List.choose candidates
-
-
-chooseDirection : Generator Direction
-chooseDirection =
-    Random.uniform UP [ DOWN, RIGHT, LEFT ]
-
-
-chooseDirections : Int -> Generator (List Direction)
-chooseDirections maxOfCoordinate =
-    Random.list ((maxOfCoordinate ^ 2) * 2) chooseDirection
 
 
 

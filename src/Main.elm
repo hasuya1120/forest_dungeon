@@ -1,10 +1,10 @@
 module Main exposing (Model, Msg, init, main, subscriptions, update, view)
 
+import Board exposing (Board, Directions, MaybeCandidates, chooseDirectionsAndCandidate, updateRoom, viewRoom)
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Random
-import Room exposing (..)
 
 
 main : Program () Model Msg
@@ -18,17 +18,17 @@ main =
 
 
 type alias Model =
-    { room : Room }
+    { board : Board }
 
 
 init : ( Model, Cmd Msg )
 init =
     let
-        room =
-            initializeRoom 30
+        board =
+            Board.init 30
     in
-    ( { room = room }
-    , Random.generate ChooseCandidate (chooseCandidate room.candidates)
+    ( { board = board }
+    , Random.generate ChooseDirectionsCandidateForPrimary (chooseDirectionsAndCandidate board.primaryRoom.candidates 30)
     )
 
 
@@ -37,38 +37,42 @@ init =
 
 
 type Msg
-    = ChooseCandidate ( Maybe Point, List Point )
-    | ChooseDirections (List Direction)
-    | GeneratingRoom
+    = ChooseDirectionsCandidateForPrimary ( MaybeCandidates, Directions )
+    | ChooseDirectionsCandidateForSecondary ( MaybeCandidates, Directions )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ChooseCandidate ( maybeCandidate, _ ) ->
+        ChooseDirectionsCandidateForPrimary ( maybeCandidate, directions ) ->
             let
-                currentRoom =
-                    model.room
+                currentBoard =
+                    model.board
 
-                newRoom =
-                    { currentRoom | candidates = Maybe.withDefault [] (Maybe.map List.singleton maybeCandidate) }
+                newPrimaryRoom =
+                    updateRoom maybeCandidate directions currentBoard.primaryRoom
+
+                newBoard =
+                    { currentBoard | primaryRoom = newPrimaryRoom }
             in
-            ( { model | room = newRoom }
-            , Random.generate ChooseDirections (chooseDirections newRoom.maxOfCoordinate)
+            ( { model | board = newBoard }
+            , Random.generate
+                ChooseDirectionsCandidateForSecondary
+                (chooseDirectionsAndCandidate newBoard.secondaryRoom.candidates 30)
             )
 
-        ChooseDirections directions ->
+        ChooseDirectionsCandidateForSecondary ( maybeCandidate, directions ) ->
             let
-                currentRoom =
-                    model.room
+                currentBoard =
+                    model.board
 
-                newRoom =
-                    { currentRoom | directions = directions }
+                newSecondaryRoom =
+                    updateRoom maybeCandidate directions currentBoard.secondaryRoom
+
+                newBoard =
+                    { currentBoard | secondaryRoom = newSecondaryRoom }
             in
-            update GeneratingRoom { model | room = newRoom }
-
-        GeneratingRoom ->
-            ( { model | room = generateRoom model.room }, Cmd.none )
+            ( { model | board = newBoard }, Cmd.none )
 
 
 
@@ -83,19 +87,4 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div [ class "game_board" ]
-        [ div [ class "container" ]
-            (List.map
-                (\p -> viewPointWithin1PointWithCharacter p)
-                model.room.points
-            )
-        ]
-
-
-viewPointWithin1PointWithCharacter : Point -> Html Msg
-viewPointWithin1PointWithCharacter point =
-    case point.coordinateStatus of
-        Wall ->
-            div [ class "wall" ] [ text "🌲" ]
-
-        Road ->
-            div [ class "road" ] [ text "☘️" ]
+        [ div [ class "container" ] (viewRoom model.board.primaryRoom) ]
