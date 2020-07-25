@@ -7,6 +7,7 @@ type alias Room =
     { points : RoomPoints
     , maxOfCoordinate : Int
     , stairsCoordinate : Coordinate
+    , startCoordinate : Coordinate
     , directions : List Direction
     , candidates : Candidates
     }
@@ -56,6 +57,7 @@ initializeRoom maxOfCoordinate =
     { points = points
     , maxOfCoordinate = maxOfCoordinate
     , stairsCoordinate = Coordinate 0 0
+    , startCoordinate = Coordinate 0 0
     , directions = []
     , candidates = initializeCandidate points
     }
@@ -163,7 +165,13 @@ generateRoom room =
                             Maybe.withDefault point (ListE.find (\p -> p.coordinate == c2) room.points)
                                 |> (\p -> p :: room.candidates)
                     in
-                    generateRoom { room | points = roomPoints, candidates = nextCandidates, directions = newDirections }
+                    generateRoom
+                        { room
+                            | points = roomPoints
+                            , candidates = nextCandidates
+                            , directions = newDirections
+                            , startCoordinate = point.coordinate
+                        }
 
                 Nothing ->
                     let
