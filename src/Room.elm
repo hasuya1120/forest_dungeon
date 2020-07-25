@@ -149,7 +149,7 @@ generateRoom room =
     in
     case room.candidates of
         [] ->
-            { room | points = makeWall room.maxOfCoordinate room.points }
+            breakThroughTheWall { room | points = makeWall room.maxOfCoordinate room.points }
 
         point :: points ->
             let
@@ -203,3 +203,21 @@ diggingSpecifiedDirection c0 c1 c2 room =
 
     else
         Nothing
+
+
+canTheWallBreak : Room -> Point -> Bool
+canTheWallBreak room point =
+    point.coordinateStatus
+        == Wall
+        && not (isPerimeter room.maxOfCoordinate point.coordinate.x point.coordinate.y)
+        && (remainderBy 3 point.coordinate.x == 0 || remainderBy 3 point.coordinate.x == 0)
+
+
+breakThroughTheWall : Room -> Room
+breakThroughTheWall room =
+    { room
+        | points =
+            ListE.updateIf (\p -> canTheWallBreak room p)
+                (\p -> { p | coordinateStatus = Road })
+                room.points
+    }
